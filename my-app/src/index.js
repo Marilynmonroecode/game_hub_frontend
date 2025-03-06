@@ -1,10 +1,12 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client'; // Ensure you're using react-dom/client for React 18+ support
-import App from './App';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import { BrowserRouter } from "react-router-dom";
 
-const root = ReactDOM.createRoot(document.getElementById('root')); // Reference to the DOM element with id 'root'
+// Wrap the App component with BrowserRouter
+const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-  <React.StrictMode>
+  <BrowserRouter>
     <App />
-  </React.StrictMode>
+  </BrowserRouter>
 );
