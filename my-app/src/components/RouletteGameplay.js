@@ -150,30 +150,30 @@ const RouletteGameplay = () => {
   };
 
   const pullTrigger = () => {
-    // Only allow pull trigger if not spinning
+    // Only allow pulling the trigger if the barrel isn't spinning
     if (isSpinning) return;
-    
+  
     // Random chance (1 in 6) of firing
     const chamberFired = Math.floor(Math.random() * 6) === 0;
-    
+  
     if (chamberFired) {
-      // Play gunshot sound
+      // Play gunshot sound if the bullet is fired
       if (gunShotSoundRef.current) {
         gunShotSoundRef.current.currentTime = 0;
         gunShotSoundRef.current.play();
       }
-      
+  
       // Game over - outcome depends on who pulled the trigger
       setGameOver(true);
-      
+  
       if (currentTurn === "player") {
         // Player's turn and gun fired - player wins (shot the opponent)
         setGameResult("win");
-        
+  
         // Add the entire pot to player's balance
         const newBalance = balance + potAmount;
         setBalance(newBalance);
-        
+  
         // Add to history
         const newBetRecord = {
           timestamp: new Date().toLocaleString(),
@@ -184,15 +184,15 @@ const RouletteGameplay = () => {
           outcome: "won",
           balanceAfter: newBalance
         };
-        
+  
         setBetHistory(prevHistory => [...prevHistory, newBetRecord]);
       } else {
         // Opponent's turn and gun fired - player loses (got shot)
         setGameResult("lose");
-        
+  
         // Balance was already deducted when bet was placed
         const newBalance = balance;
-        
+  
         // Add to history
         const newBetRecord = {
           timestamp: new Date().toLocaleString(),
@@ -202,34 +202,34 @@ const RouletteGameplay = () => {
           outcome: "lost",
           balanceAfter: newBalance
         };
-        
+  
         setBetHistory(prevHistory => [...prevHistory, newBetRecord]);
       }
     } else {
-      // Play blank shot sound
+      // Play blank shot sound if no bullet is fired
       if (blankShotSoundRef.current) {
         blankShotSoundRef.current.currentTime = 0;
         blankShotSoundRef.current.play();
       }
-      
-      // Move to next chamber
+  
+      // Move to the next chamber
       setChamber(prev => prev + 1);
-      
+  
       // Change turn
       setCurrentTurn(prevTurn => prevTurn === "player" ? "opponent" : "player");
-      
+  
       // If it was the last chamber, the last player automatically wins
       if (chamber === 5) {
         setGameOver(true);
-        
+  
         if (currentTurn === "player") {
           // It was player's turn for the last chamber, player wins
           setGameResult("win");
-          
+  
           // Add the entire pot to player's balance
           const newBalance = balance + potAmount;
           setBalance(newBalance);
-          
+  
           // Add to history
           const newBetRecord = {
             timestamp: new Date().toLocaleString(),
@@ -240,15 +240,15 @@ const RouletteGameplay = () => {
             outcome: "won",
             balanceAfter: newBalance
           };
-          
+  
           setBetHistory(prevHistory => [...prevHistory, newBetRecord]);
         } else {
           // It was opponent's turn for the last chamber, player loses
           setGameResult("lose");
-          
+  
           // Balance was already deducted when bet was placed
           const newBalance = balance;
-          
+  
           // Add to history
           const newBetRecord = {
             timestamp: new Date().toLocaleString(),
@@ -258,12 +258,13 @@ const RouletteGameplay = () => {
             outcome: "lost",
             balanceAfter: newBalance
           };
-          
+  
           setBetHistory(prevHistory => [...prevHistory, newBetRecord]);
         }
       }
     }
   };
+  
   
   // Volume control state
   const [isMuted, setIsMuted] = useState(false);
