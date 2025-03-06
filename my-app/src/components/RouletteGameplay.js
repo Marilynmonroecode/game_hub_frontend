@@ -31,11 +31,36 @@ const RouletteGameplay = () => {
   const [currentTurn, setCurrentTurn] = useState("player"); // "player" or "opponent"
   const [gunRotation, setGunRotation] = useState(0); // For gun rotation angle
   
+  // Audio refs
+  const barrelSpinSoundRef = useRef(null);
+  const blankShotSoundRef = useRef(null);
+  const gunShotSoundRef = useRef(null);
+  
   // Get existing bet history from localStorage
   const [betHistory, setBetHistory] = useState(() => {
     const savedHistory = localStorage.getItem('roulette_history');
     return savedHistory ? JSON.parse(savedHistory) : [];
   });
+
+  // Initialize audio on component mount
+  useEffect(() => {
+    // Create audio elements
+    barrelSpinSoundRef.current = new Audio("./assets/sounds/barrel-spin.mp3");
+    blankShotSoundRef.current = new Audio("./assets/sounds/blank-shot.mp3");
+    gunShotSoundRef.current = new Audio("./assets/sounds/gunshot.mp3");
+    
+    // Preload sounds
+    barrelSpinSoundRef.current.load();
+    blankShotSoundRef.current.load();
+    gunShotSoundRef.current.load();
+    
+    // Cleanup on unmount
+    return () => {
+      if (barrelSpinSoundRef.current) barrelSpinSoundRef.current.pause();
+      if (blankShotSoundRef.current) blankShotSoundRef.current.pause();
+      if (gunShotSoundRef.current) gunShotSoundRef.current.pause();
+    };
+  }, []);
 
   // If required data is missing, redirect back to setup
   useEffect(() => {
@@ -79,6 +104,12 @@ const RouletteGameplay = () => {
     // Only allow spinning if not already spinning
     if (!isSpinning) {
       setIsSpinning(true);
+      
+      // Play barrel spin sound
+      if (barrelSpinSoundRef.current) {
+        barrelSpinSoundRef.current.currentTime = 0;
+        barrelSpinSoundRef.current.play();
+      }
       
       // Random number of rotations between 3 and 5
       const rotations = 3 + Math.random() * 2;
@@ -126,6 +157,12 @@ const RouletteGameplay = () => {
     const chamberFired = Math.floor(Math.random() * 6) === 0;
     
     if (chamberFired) {
+      // Play gunshot sound
+      if (gunShotSoundRef.current) {
+        gunShotSoundRef.current.currentTime = 0;
+        gunShotSoundRef.current.play();
+      }
+      
       // Game over - outcome depends on who pulled the trigger
       setGameOver(true);
       
@@ -169,6 +206,12 @@ const RouletteGameplay = () => {
         setBetHistory(prevHistory => [...prevHistory, newBetRecord]);
       }
     } else {
+      // Play blank shot sound
+      if (blankShotSoundRef.current) {
+        blankShotSoundRef.current.currentTime = 0;
+        blankShotSoundRef.current.play();
+      }
+      
       // Move to next chamber
       setChamber(prev => prev + 1);
       
@@ -222,6 +265,20 @@ const RouletteGameplay = () => {
     }
   };
   
+  // Volume control state
+  const [isMuted, setIsMuted] = useState(false);
+  
+  // Toggle mute function
+  const toggleMute = () => {
+    const newMutedState = !isMuted;
+    setIsMuted(newMutedState);
+    
+    // Apply muted state to all audio elements
+    if (barrelSpinSoundRef.current) barrelSpinSoundRef.current.muted = newMutedState;
+    if (blankShotSoundRef.current) blankShotSoundRef.current.muted = newMutedState;
+    if (gunShotSoundRef.current) gunShotSoundRef.current.muted = newMutedState;
+  };
+  
   // Return to setup
   const quitGame = () => {
     navigate('/game-hub', { state: { username, balance, profileImage } });
@@ -245,7 +302,7 @@ const RouletteGameplay = () => {
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header with back button */}
+        {/* Header with back button and sound toggle */}
         <div className="flex justify-between items-center mb-8">
           <button 
             onClick={quitGame}
@@ -254,6 +311,12 @@ const RouletteGameplay = () => {
             ← Quit Game
           </button>
           <div className="text-xl font-bold">Balance: ${balance}</div>
+          <button
+            onClick={toggleMute}
+            className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+          >
+            {isMuted ? "🔇 Unmute" : "🔊 Mute"}
+          </button>
         </div>
         
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
